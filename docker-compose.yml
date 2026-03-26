@@ -1,0 +1,11 @@
+services:
+  port-tracker:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - port-tracker-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  port-tracker-data:

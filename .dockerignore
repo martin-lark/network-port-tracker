@@ -1,0 +1,9 @@
+node_modules
+client/node_modules
+client/dist
+data
+.superpowers
+.git
+test
+docs
+*.md

@@ -1,0 +1,23 @@
+{
+  "name": "port-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "client:dev": "cd client && npm run dev",
+    "client:build": "cd client && npm run build",
+    "start": "NODE_ENV=production node server/index.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "supertest": "^7.0.0",
+    "vitest": "^3.0.0"
+  }
+}

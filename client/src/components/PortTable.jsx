@@ -1,17 +1,31 @@
 import React, { useState } from 'react';
 import * as api from '../api.js';
 
+// Sortable port table with inline status toggle and edit/delete actions.
+// All column headers are clickable to sort. Tags are parsed from JSON for sorting.
 export function PortTable({ ports, onPortUpdated, onEditPort }) {
   const [sortField, setSortField] = useState('port_number');
   const [sortDir, setSortDir] = useState('asc');
+  const [grouped, setGrouped] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState(new Set());
 
+  // Click same column to toggle direction, click new column to sort ascending
   const handleSort = (field) => {
     if (sortField === field) setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
     else { setSortField(field); setSortDir('asc'); }
   };
 
+  // Tags are stored as JSON strings in the DB — parse and alphabetize for consistent sort order
+  const getSortValue = (port, field) => {
+    if (field === 'tags') {
+      try { const tags = JSON.parse(port.tags || '[]'); return tags.sort().join(', '); }
+      catch { return ''; }
+    }
+    return port[field] ?? '';
+  };
+
   const sorted = [...ports].sort((a, b) => {
-    const aVal = a[sortField] ?? ''; const bVal = b[sortField] ?? '';
+    const aVal = getSortValue(a, sortField); const bVal = getSortValue(b, sortField);
     const cmp = typeof aVal === 'number' ? aVal - bVal : String(aVal).localeCompare(String(bVal));
     return sortDir === 'asc' ? cmp : -cmp;
   });
@@ -24,6 +38,25 @@ export function PortTable({ ports, onPortUpdated, onEditPort }) {
   const handleDelete = async (port) => {
     if (!confirm(`Delete port ${port.port_number} (${port.service_name})?`)) return;
     await api.deletePort(port.id); onPortUpdated();
+  };
+
+  const toggleGroup = (name) => {
+    setCollapsedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  };
+
+  const groupPorts = (portList) => {
+    const groups = new Map();
+    for (const port of portList) {
+      const name = port.category_name || 'Uncategorized';
+      if (!groups.has(name)) groups.set(name, []);
+      groups.get(name).push(port);
+    }
+    return groups;
   };
 
   const formatPort = (p) => p.port_end ? `${p.port_number}-${p.port_end}` : p.port_number;
@@ -39,7 +72,7 @@ export function PortTable({ ports, onPortUpdated, onEditPort }) {
     { key: 'tunnel', label: 'Tunnel' }, { key: 'tags', label: 'Tags' }, { key: 'notes', label: 'Notes' },
   ];
 
-  return (
+  const renderTable = (portList) => (
     <table className="port-table">
       <thead><tr>
         {columns.map((col) => (
@@ -50,7 +83,7 @@ export function PortTable({ ports, onPortUpdated, onEditPort }) {
         <th></th>
       </tr></thead>
       <tbody>
-        {sorted.map((port) => (
+        {portList.map((port) => (
           <tr key={port.id}>
             <td><span className="port-number">{formatPort(port)}</span></td>
             <td>{port.service_name}</td>
@@ -67,8 +100,43 @@ export function PortTable({ ports, onPortUpdated, onEditPort }) {
             </div></td>
           </tr>
         ))}
-        {sorted.length === 0 && <tr><td colSpan={10} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '24px' }}>No ports yet. Click "Add Port" to get started.</td></tr>}
       </tbody>
     </table>
+  );
+
+  const renderFlat = () => (
+    <>
+      {renderTable(sorted)}
+      {sorted.length === 0 && <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '24px' }}>No ports yet. Click "Add Port" to get started.</div>}
+    </>
+  );
+
+  const renderGrouped = () => {
+    const groups = groupPorts(sorted);
+    if (sorted.length === 0) {
+      return <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '24px' }}>No ports yet. Click "Add Port" to get started.</div>;
+    }
+    return [...groups.entries()].map(([name, groupPorts]) => (
+      <div key={name} className="port-group">
+        <div className="port-group-header" onClick={() => toggleGroup(name)}>
+          <span className="port-group-toggle">{collapsedGroups.has(name) ? '\u25B6' : '\u25BC'}</span>
+          <span className="port-group-name">{name}</span>
+          <span className="port-group-count">{groupPorts.length} port{groupPorts.length !== 1 ? 's' : ''}</span>
+        </div>
+        {!collapsedGroups.has(name) && renderTable(groupPorts)}
+      </div>
+    ));
+  };
+
+  return (
+    <div className="port-table-wrapper">
+      <div className="port-table-controls">
+        <button className={`btn btn-sm ${grouped ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setGrouped(!grouped)}>
+          {grouped ? 'Grouped by Category' : 'Group by Category'}
+        </button>
+      </div>
+      {grouped ? renderGrouped() : renderFlat()}
+    </div>
   );
 }

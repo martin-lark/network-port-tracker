@@ -378,6 +378,51 @@ body {
   color: var(--accent);
 }
 
+/* Port table controls */
+.port-table-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+/* Port category groups */
+.port-group {
+  margin-bottom: 16px;
+}
+
+.port-group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+
+.port-group-header:hover {
+  background: var(--bg-tertiary);
+}
+
+.port-group-toggle {
+  font-size: 10px;
+  color: var(--text-muted);
+  width: 12px;
+}
+
+.port-group-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.port-group-count {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-left: auto;
+}
+
 /* ── Mobile responsive ─────────────────────────── */
 
 @media (max-width: 768px) {

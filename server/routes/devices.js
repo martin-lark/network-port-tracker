@@ -48,6 +48,32 @@ devicesRouter.post('/scan', async (req, res) => {
   }
 });
 
+// POST /clean-scan — scan network, then remove stale non-known devices not found in scan
+devicesRouter.post('/clean-scan', async (req, res) => {
+  try {
+    const result = await scanNetwork(req.db);
+    // Get IPs found in this scan
+    const foundIps = new Set(result.devices.map(d => d.ip_address));
+    // Delete non-known, non-linked devices that weren't found
+    const stale = req.db.prepare(
+      'SELECT * FROM devices WHERE is_known = 0 AND host_id IS NULL'
+    ).all();
+    let removedCount = 0;
+    for (const device of stale) {
+      if (!foundIps.has(device.ip_address)) {
+        req.db.prepare('DELETE FROM devices WHERE id = ?').run(device.id);
+        removedCount++;
+      }
+    }
+    res.json({
+      ...result,
+      scan_summary: { ...result.scan_summary, removed: removedCount },
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // PUT /:id — update a device (sets is_known = 1 since user is actively editing)
 devicesRouter.put('/:id', (req, res) => {
   const existing = req.db.prepare('SELECT * FROM devices WHERE id = ?').get(req.params.id);

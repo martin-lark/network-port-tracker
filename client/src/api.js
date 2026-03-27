@@ -66,3 +66,4 @@ export const updateDevice = (id, data) => request(`/devices/${id}`, { method: 'P
 export const deleteDevice = (id) => request(`/devices/${id}`, { method: 'DELETE' });
 export const saveDevicePosition = (id, x, y) => request(`/devices/${id}/position`, { method: 'PUT', body: JSON.stringify({ x, y }) });
 export const scanNetwork = () => request('/devices/scan', { method: 'POST' });
+export const cleanScanNetwork = () => request('/devices/clean-scan', { method: 'POST' });

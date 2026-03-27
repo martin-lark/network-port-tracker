@@ -88,6 +88,35 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
     setScanning(false);
   };
 
+  const handleCleanScan = async () => {
+    setScanning(true);
+    setScanSummary(null);
+    try {
+      const result = await api.cleanScanNetwork();
+      setScanSummary(result.scan_summary);
+      await fetchDevices();
+    } catch (err) {
+      alert(err.error || 'Clean scan failed');
+    }
+    setScanning(false);
+  };
+
+  const handleTidyGrid = () => {
+    const filtered = hideDocker ? devices.filter(d => !d.ip_address.startsWith('172.')) : devices;
+    const visible = categoryFilter !== 'all' ? filtered.filter(d => d.category === categoryFilter) : filtered;
+    const cols = Math.max(4, Math.ceil(Math.sqrt(visible.length)));
+    const spacing = 200;
+    const newNodes = visible.map((d, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = col * spacing + 50;
+      const y = row * spacing + 50;
+      api.saveDevicePosition(d.id, x, y);
+      return { id: String(d.id), type: 'device', position: { x, y }, data: { device: d } };
+    });
+    setNodes(newNodes);
+  };
+
   // Save position when a node is dragged
   const handleNodeDragStop = useCallback((event, node) => {
     clearTimeout(dragSaveTimeout.current);
@@ -137,6 +166,12 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
         <button className="btn btn-primary btn-sm" onClick={handleScan} disabled={scanning}>
           {scanning ? 'Scanning...' : 'Scan Network'}
         </button>
+        <button className="btn btn-secondary btn-sm" onClick={handleCleanScan} disabled={scanning}>
+          Clean Scan
+        </button>
+        <button className="btn btn-secondary btn-sm" onClick={handleTidyGrid}>
+          Tidy Grid
+        </button>
         <button className={`btn btn-sm ${knownOnly ? 'btn-secondary' : 'btn-primary'}`}
           onClick={() => setKnownOnly(!knownOnly)}>
           {knownOnly ? 'Known Only' : 'Show All'}
@@ -158,6 +193,7 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
         {scanSummary && (
           <span className="map-scan-summary">
             Found {scanSummary.new} new, updated {scanSummary.updated}
+            {scanSummary.removed > 0 && `, removed ${scanSummary.removed} stale`}
           </span>
         )}
       </div>

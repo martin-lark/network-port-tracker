@@ -11,6 +11,8 @@ export function DevicePopover({ device, devices, hosts, onClose, onSelectHost, o
   const [editHostname, setEditHostname] = useState(device.hostname || '');
   const [editCategory, setEditCategory] = useState(device.category || 'other');
   const [linkHostId, setLinkHostId] = useState('');
+  const [scanning, setScanning] = useState(false);
+  const [scanSummary, setScanSummary] = useState(null);
 
   // Fetch top services if device is linked to a host
   useEffect(() => {
@@ -37,6 +39,19 @@ export function DevicePopover({ device, devices, hosts, onClose, onSelectHost, o
     if (!confirm(`Remove ${device.hostname || device.ip_address} from map?`)) return;
     await api.deleteDevice(device.id);
     onDeviceDeleted();
+  };
+
+  const handleScanPorts = async () => {
+    setScanning(true);
+    setScanSummary(null);
+    try {
+      const result = await api.scanHostPorts(device.host_id);
+      setScanSummary(result.scan_summary);
+      setTimeout(() => setScanSummary(null), 8000);
+    } catch (err) {
+      alert(err.error || 'Scan failed');
+    }
+    setScanning(false);
   };
 
   // Exclude hosts already linked to another device
@@ -106,10 +121,21 @@ export function DevicePopover({ device, devices, hosts, onClose, onSelectHost, o
         </div>
       )}
 
+      {scanSummary && (
+        <div style={{ padding: '6px 0', fontSize: '12px', color: 'var(--accent)' }}>
+          Found {scanSummary.open} open — {scanSummary.new} new, {scanSummary.updated} updated
+        </div>
+      )}
+
       {/* Action buttons */}
       <div className="device-popover-actions">
         {device.host_id && (
           <button className="btn btn-primary btn-sm" onClick={() => onSelectHost(device.host_id)}>View Details</button>
+        )}
+        {device.host_id && (
+          <button className="btn btn-primary btn-sm" onClick={handleScanPorts} disabled={scanning}>
+            {scanning ? 'Scanning...' : 'Scan Ports'}
+          </button>
         )}
         {!device.host_id && (
           <button className="btn btn-primary btn-sm"

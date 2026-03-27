@@ -22,14 +22,17 @@ export function parseArpOutput(output) {
 }
 
 // Find the local private subnet prefix (e.g., '192.168.1') from network interfaces.
+// Skips Docker bridge interfaces (br-*, docker0, veth*) to avoid scanning container networks.
+// Returns { subnet, localIp, localMac } or null.
 export function getLocalSubnet() {
   const ifaces = networkInterfaces();
   for (const name of Object.keys(ifaces)) {
+    if (name.startsWith('br-') || name === 'docker0' || name.startsWith('veth')) continue;
     for (const iface of ifaces[name]) {
       if (iface.family === 'IPv4' && !iface.internal) {
         const parts = iface.address.split('.');
         if (parts[0] === '192' || parts[0] === '10' || (parts[0] === '172' && Number(parts[1]) >= 16 && Number(parts[1]) <= 31)) {
-          return parts.slice(0, 3).join('.');
+          return { subnet: parts.slice(0, 3).join('.'), localIp: iface.address, localMac: iface.mac };
         }
       }
     }
@@ -62,10 +65,11 @@ async function pingHost(ip) {
 // Updates the database with discovered devices.
 // Returns { devices, scan_summary }.
 export async function scanNetwork(db) {
-  const subnet = getLocalSubnet();
-  if (!subnet) {
+  const localInfo = getLocalSubnet();
+  if (!localInfo) {
     throw new Error('Could not detect local subnet. Make sure the container has host network access.');
   }
+  const { subnet, localIp, localMac } = localInfo;
 
   // Step 1: Initial ARP scan
   let arpResult;
@@ -96,9 +100,18 @@ export async function scanNetwork(db) {
   const finalArp = parseArpOutput(arpResult2.stdout);
 
   // Merge ARP results (dedupe by IP, prefer later scan's MAC)
+  // Filter out Docker bridge IPs (172.x.x.x on br-* interfaces)
   const deviceMap = new Map();
   for (const entry of [...initialArp, ...finalArp]) {
+    const parts = entry.ip.split('.');
+    // Skip if it doesn't match our LAN subnet
+    if (parts.slice(0, 3).join('.') !== subnet) continue;
     deviceMap.set(entry.ip, entry.mac);
+  }
+
+  // Include the local machine (can't ARP yourself)
+  if (localIp && !deviceMap.has(localIp)) {
+    deviceMap.set(localIp, localMac || 'unknown');
   }
 
   // Step 4: Process discoveries

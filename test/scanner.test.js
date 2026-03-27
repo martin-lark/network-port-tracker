@@ -27,11 +27,13 @@ describe('Scanner utilities', () => {
   });
 
   describe('getLocalSubnet', () => {
-    it('returns a subnet string in CIDR-like format', () => {
-      const subnet = getLocalSubnet();
-      // Should return something like '192.168.1' or null if no private interface
-      if (subnet) {
-        expect(subnet).toMatch(/^\d+\.\d+\.\d+$/);
+    it('returns an object with subnet, localIp, and localMac', () => {
+      const result = getLocalSubnet();
+      // Should return { subnet, localIp, localMac } or null if no private interface
+      if (result) {
+        expect(result.subnet).toMatch(/^\d+\.\d+\.\d+$/);
+        expect(result.localIp).toMatch(/^\d+\.\d+\.\d+\.\d+$/);
+        expect(result.localMac).toBeDefined();
       }
     });
   });

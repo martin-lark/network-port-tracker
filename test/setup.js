@@ -7,6 +7,7 @@ import { searchRouter } from '../server/routes/search.js';
 import { exportRouter } from '../server/routes/export.js';
 import { devicesRouter } from '../server/routes/devices.js';
 import { categoriesRouter } from '../server/routes/categories.js';
+import { connectionsRouter } from '../server/routes/connections.js';
 
 // Create an isolated Express app with an in-memory SQLite database for testing.
 // Each test file calls this to get a fresh database with no shared state.
@@ -22,5 +23,6 @@ export function createTestApp() {
   app.use('/api/export', exportRouter);
   app.use('/api/devices', devicesRouter);
   app.use('/api/categories', categoriesRouter);
+  app.use('/api/connections', connectionsRouter);
   return { app, db };
 }

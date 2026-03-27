@@ -57,6 +57,7 @@ hostsRouter.put('/:id', (req, res) => {
     return res.status(404).json({ error: 'Host not found' });
   }
 
+  // Merge existing data with request body to support partial updates
   const { name, ip_address, os, type, description } = { ...existing, ...req.body };
 
   req.db.prepare(

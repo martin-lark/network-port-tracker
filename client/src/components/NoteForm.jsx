@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { Modal } from './Modal.jsx';
 import * as api from '../api.js';
 
+// Add/edit note modal. Notes can be global (no host) or linked to a specific host.
+// When opened from host detail, hostId pre-selects the host. Host selector only
+// shows when hosts array is passed (i.e. from the Notes tab, not from host detail).
 export function NoteForm({ note, hostId, hosts, onClose, onSaved }) {
   const [form, setForm] = useState({
     title: note?.title || '', content: note?.content || '',
-    host_id: note?.host_id ?? hostId ?? ''
+    host_id: note?.host_id ?? hostId ?? ''  // Prefer existing note's host, then prop, then empty (global)
   });
   const [error, setError] = useState('');
 

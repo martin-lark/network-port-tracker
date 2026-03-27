@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import * as api from '../api.js';
 
+// Export panel with format selection (markdown/csv/text), scope (this host/all/by client),
+// live preview, and copy-to-clipboard. Preview refreshes automatically when options change.
 export function ExportPanel({ hostId, hosts }) {
   const [format, setFormat] = useState('markdown');
   const [scope, setScope] = useState(hostId ? 'host' : 'all');
@@ -8,6 +10,7 @@ export function ExportPanel({ hostId, hosts }) {
   const [preview, setPreview] = useState('');
   const [copied, setCopied] = useState(false);
 
+  // Re-fetch preview whenever format, scope, or filter changes
   useEffect(() => {
     const params = {};
     if (scope === 'host' && hostId) params.host_id = hostId;

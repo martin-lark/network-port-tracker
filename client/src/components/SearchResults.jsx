@@ -1,5 +1,7 @@
 import React from 'react';
 
+// Displays search results grouped by type (hosts, ports, notes).
+// Clicking a host or port result navigates to the corresponding host detail view.
 export function SearchResults({ results, query, onSelectHost }) {
   if (!results) return null;
   const { hosts, ports, notes } = results;

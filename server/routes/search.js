@@ -2,7 +2,9 @@ import { Router } from 'express';
 
 export const searchRouter = Router();
 
-// GET / — search across hosts, ports, and notes
+// GET / — global search across hosts, ports, and notes.
+// Searches all text fields with LIKE pattern matching.
+// Port results include host name/IP via JOIN for display context.
 searchRouter.get('/', (req, res) => {
   const { q } = req.query;
 

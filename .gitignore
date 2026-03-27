@@ -4,3 +4,6 @@ data/
 .superpowers/
 *.db
 .env
+.claude
+.claude-*
+docs

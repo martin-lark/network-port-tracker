@@ -6,6 +6,7 @@ function formatPort(port) {
   return port.port_end ? `${port.port_number}-${port.port_end}` : `${port.port_number}`;
 }
 
+// Fetch hosts, ports, and notes for export. Optionally scoped to a single host or client.
 function getExportData(db, { host_id, client }) {
   let hosts;
   if (host_id) {
@@ -66,7 +67,7 @@ function toCsv(data) {
       const port = formatPort(p);
       rows.push(
         [host.name, host.ip_address, port, p.service_name, p.protocol, p.status, p.client || '', p.domain || '']
-          .map(v => `"${String(v).replace(/"/g, '""')}"`)
+          .map(v => `"${String(v).replace(/"/g, '""')}"`)  // Escape quotes per CSV spec
           .join(',')
       );
     }

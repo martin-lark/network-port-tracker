@@ -75,6 +75,7 @@ export function HostDetail({ hostId, onHostUpdated, onHostDeleted, hosts }) {
               <div className="scan-dropdown">
                 <button className="scan-dropdown-item" onClick={() => handleScan('common')}>Common Ports (~150)</button>
                 <button className="scan-dropdown-item" onClick={() => handleScan('1-1024')}>Well-Known (1-1024)</button>
+                <button className="scan-dropdown-item" onClick={() => handleScan('1-65535')}>All Ports (slow)</button>
                 <div className="scan-dropdown-custom">
                   <input className="search-input" value={customPorts} onChange={(e) => setCustomPorts(e.target.value)}
                     placeholder="e.g. 80,443,8080 or 1-1024" style={{ fontSize: '12px' }} />

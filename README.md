@@ -11,6 +11,7 @@ A self-hosted web app for tracking ports, services, domains, and network topolog
 **Port Scanning** — TCP connect scanning discovers open services on hosts automatically. Scan common ports (~150 curated home-lab services), well-known ports (1-1024), or all 65535 ports. Found ports are auto-created with best-guess service names.
 
 **Network Map & Topology** — Visual network map built on React Flow showing all discovered and manually-added devices as draggable nodes. Features include:
+
 - Network scanning via ARP + ping sweep to discover devices on your LAN
 - Manual device creation for infrastructure that doesn't respond to scans (unmanaged switches, etc.)
 - Device categories: server, desktop, mobile, IoT, network, router, switch, access point, firewall
@@ -53,11 +54,11 @@ Data is persisted in a Docker volume (`port-tracker-data`). The SQLite database 
 
 #### Configuration
 
-| Environment Variable | Default | Description |
-|---------------------|---------|-------------|
-| `PORT` | `3000` | Port the server listens on |
-| `DATA_DIR` | `/app/data` | Directory for the SQLite database file |
-| `NODE_ENV` | `production` | Set to `production` to serve the built React SPA |
+| Environment Variable | Default      | Description                                      |
+| -------------------- | ------------ | ------------------------------------------------ |
+| `PORT`               | `3000`       | Port the server listens on                       |
+| `DATA_DIR`           | `/app/data`  | Directory for the SQLite database file           |
+| `NODE_ENV`           | `production` | Set to `production` to serve the built React SPA |
 
 To change the port:
 
@@ -152,6 +153,7 @@ npm run test:watch  # Watch mode
 The network scanner requires access to the host network to function. In Docker, this is handled by `network_mode: host`. Without Docker, the app needs to be run on a machine connected to the target LAN.
 
 The scan process:
+
 1. Reads the ARP table (`arp -a`)
 2. Ping sweeps the local /24 subnet (batches of 50)
 3. Reads ARP again to pick up new responses
@@ -160,7 +162,3 @@ The scan process:
 6. Auto-links devices to hosts by matching IP addresses
 
 Docker bridge interfaces (`br-*`, `docker0`, `veth*`) are automatically excluded from subnet detection to avoid scanning container networks.
-
-## License
-
-Private — Lark Digital Studio

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as api from '../api.js';
 
 // Sortable port table with inline status toggle and edit/delete actions.
@@ -8,6 +8,29 @@ export function PortTable({ ports, onPortUpdated, onEditPort }) {
   const [sortDir, setSortDir] = useState('asc');
   const [grouped, setGrouped] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState(new Set());
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [newCategoryName, setNewCategoryName] = useState('');
+
+  const fetchCategories = () => { api.getCategories().then(setCategories).catch(() => {}); };
+  useEffect(() => { fetchCategories(); }, []);
+
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    try {
+      await api.createCategory(newCategoryName.trim());
+      setNewCategoryName('');
+      fetchCategories();
+    } catch (err) {
+      alert(err.error || 'Failed to create category');
+    }
+  };
+
+  const handleDeleteCategory = async (id, name) => {
+    if (!confirm(`Delete category "${name}"? Ports in this category will become uncategorized.`)) return;
+    await api.deleteCategory(id);
+    fetchCategories();
+  };
 
   // Click same column to toggle direction, click new column to sort ascending
   const handleSort = (field) => {
@@ -135,7 +158,31 @@ export function PortTable({ ports, onPortUpdated, onEditPort }) {
           onClick={() => setGrouped(!grouped)}>
           {grouped ? 'Grouped by Category' : 'Group by Category'}
         </button>
+        <button className="btn btn-sm btn-secondary"
+          onClick={() => setShowCategoryManager(!showCategoryManager)}>
+          {showCategoryManager ? 'Hide Categories' : 'Manage Categories'}
+        </button>
       </div>
+      {showCategoryManager && (
+        <div className="category-manager">
+          <div className="category-manager-list">
+            {categories.map(c => (
+              <div key={c.id} className="category-manager-item">
+                <span>{c.name}</span>
+                <button className="btn btn-danger btn-sm" onClick={() => handleDeleteCategory(c.id, c.name)}>&times;</button>
+              </div>
+            ))}
+          </div>
+          <div className="category-manager-add">
+            <input className="search-input" value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleAddCategory(); }}
+              placeholder="New category name..." />
+            <button className="btn btn-primary btn-sm" onClick={handleAddCategory}
+              disabled={!newCategoryName.trim()}>Add</button>
+          </div>
+        </div>
+      )}
       {grouped ? renderGrouped() : renderFlat()}
     </div>
   );

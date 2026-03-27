@@ -423,6 +423,50 @@ body {
   margin-left: auto;
 }
 
+/* Category manager */
+.category-manager {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.category-manager-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.category-manager-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.category-manager-item button {
+  padding: 0 4px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.category-manager-add {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.category-manager-add input {
+  flex: 1;
+  font-size: 13px;
+}
+
 /* ── Mobile responsive ─────────────────────────── */
 
 @media (max-width: 768px) {

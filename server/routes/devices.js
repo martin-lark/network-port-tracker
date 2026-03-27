@@ -60,7 +60,7 @@ devicesRouter.put('/:id/position', (req, res) => {
     return res.status(404).json({ error: 'Device not found' });
   }
   const { x, y } = req.body;
-  req.db.prepare('UPDATE devices SET x_position = ?, y_position = ?, updated_at = datetime(\'now\') WHERE id = ?')
+  req.db.prepare(`UPDATE devices SET x_position = ?, y_position = ?, updated_at = datetime('now') WHERE id = ?`)
     .run(x, y, req.params.id);
   const device = req.db.prepare('SELECT * FROM devices WHERE id = ?').get(req.params.id);
   res.json(device);

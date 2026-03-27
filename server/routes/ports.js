@@ -86,23 +86,23 @@ portsRouter.post('/hosts/:id/scan', async (req, res) => {
 portsRouter.get('/hosts/:id/ports', (req, res) => {
   const { status, client, protocol } = req.query;
   // Build query dynamically — params array stays in sync with ? placeholders
-  let sql = 'SELECT * FROM ports WHERE host_id = ?';
+  let sql = 'SELECT p.*, pc.name AS category_name FROM ports p LEFT JOIN port_categories pc ON pc.id = p.category_id WHERE p.host_id = ?';
   const params = [req.params.id];
 
   if (status) {
-    sql += ' AND status = ?';
+    sql += ' AND p.status = ?';
     params.push(status);
   }
   if (client) {
-    sql += ' AND client = ?';
+    sql += ' AND p.client = ?';
     params.push(client);
   }
   if (protocol) {
-    sql += ' AND protocol = ?';
+    sql += ' AND p.protocol = ?';
     params.push(protocol);
   }
 
-  sql += ' ORDER BY port_number';
+  sql += ' ORDER BY p.port_number';
   const ports = req.db.prepare(sql).all(...params);
   res.json(ports);
 });
@@ -112,7 +112,7 @@ portsRouter.post('/hosts/:id/ports', (req, res) => {
   const host_id = req.params.id;
   const {
     port_number, port_end, service_name, protocol,
-    status, tags, notes, client, domain, tunnel, tunnel_id,
+    status, tags, notes, client, domain, tunnel, tunnel_id, category_id,
   } = req.body;
 
   if (!port_number || !service_name) {
@@ -121,8 +121,8 @@ portsRouter.post('/hosts/:id/ports', (req, res) => {
 
   try {
     const result = req.db.prepare(`
-      INSERT INTO ports (host_id, port_number, port_end, service_name, protocol, status, tags, notes, client, domain, tunnel, tunnel_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO ports (host_id, port_number, port_end, service_name, protocol, status, tags, notes, client, domain, tunnel, tunnel_id, category_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       host_id,
       port_number,
@@ -136,6 +136,7 @@ portsRouter.post('/hosts/:id/ports', (req, res) => {
       domain || null,
       tunnel || null,
       tunnel_id || null,
+      category_id || null,
     );
 
     const port = req.db.prepare('SELECT * FROM ports WHERE id = ?').get(result.lastInsertRowid);
@@ -164,7 +165,7 @@ portsRouter.put('/ports/:id', (req, res) => {
 
   const {
     port_number, port_end, service_name, protocol,
-    status, tags, notes, client, domain, tunnel, tunnel_id,
+    status, tags, notes, client, domain, tunnel, tunnel_id, category_id,
   } = { ...existing, ...req.body };
 
   // Tags come from DB as a JSON string but from request body as an array — normalize to string
@@ -173,12 +174,12 @@ portsRouter.put('/ports/:id', (req, res) => {
   req.db.prepare(`
     UPDATE ports SET port_number = ?, port_end = ?, service_name = ?, protocol = ?,
       status = ?, tags = ?, notes = ?, client = ?, domain = ?, tunnel = ?, tunnel_id = ?,
-      updated_at = datetime('now')
+      category_id = ?, updated_at = datetime('now')
     WHERE id = ?
   `).run(
     port_number, port_end, service_name, protocol,
     status, tagsStr, notes, client, domain, tunnel, tunnel_id,
-    req.params.id,
+    category_id, req.params.id,
   );
 
   const port = req.db.prepare('SELECT * FROM ports WHERE id = ?').get(req.params.id);

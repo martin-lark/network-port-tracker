@@ -79,6 +79,19 @@ function migrate(db) {
       name TEXT NOT NULL UNIQUE,
       created_at TEXT DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS connections (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      source_device_id INTEGER NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
+      target_device_id INTEGER NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
+      connection_type TEXT DEFAULT 'ethernet' CHECK(connection_type IN ('ethernet', 'wifi', 'tunnel', 'fiber', 'usb')),
+      label TEXT,
+      speed TEXT,
+      notes TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(source_device_id, target_device_id)
+    );
   `);
 
   // Add category_id to ports if it doesn't exist yet
@@ -94,6 +107,33 @@ function migrate(db) {
     for (const name of ['Web', 'Database', 'Media', 'Monitoring', 'Infrastructure', 'Other']) {
       insert.run(name);
     }
+  }
+
+  // Expand device categories if the CHECK constraint doesn't include infrastructure types
+  try {
+    db.prepare("INSERT INTO devices (ip_address, category) VALUES ('__check__', 'router')").run();
+    db.prepare("DELETE FROM devices WHERE ip_address = '__check__'").run();
+  } catch {
+    // CHECK constraint rejected 'router' — need to recreate the table
+    db.exec(`
+      CREATE TABLE devices_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ip_address TEXT NOT NULL UNIQUE,
+        mac_address TEXT,
+        hostname TEXT,
+        host_id INTEGER REFERENCES hosts(id) ON DELETE SET NULL,
+        category TEXT DEFAULT 'other' CHECK(category IN ('server', 'desktop', 'mobile', 'iot', 'network', 'other', 'router', 'switch', 'access_point', 'firewall')),
+        is_known INTEGER DEFAULT 0,
+        last_seen TEXT,
+        x_position REAL,
+        y_position REAL,
+        created_at TEXT DEFAULT (datetime('now')),
+        updated_at TEXT DEFAULT (datetime('now'))
+      );
+      INSERT INTO devices_new SELECT * FROM devices;
+      DROP TABLE devices;
+      ALTER TABLE devices_new RENAME TO devices;
+    `);
   }
 }
 

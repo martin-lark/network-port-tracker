@@ -67,3 +67,9 @@ export const deleteDevice = (id) => request(`/devices/${id}`, { method: 'DELETE'
 export const saveDevicePosition = (id, x, y) => request(`/devices/${id}/position`, { method: 'PUT', body: JSON.stringify({ x, y }) });
 export const scanNetwork = () => request('/devices/scan', { method: 'POST' });
 export const cleanScanNetwork = () => request('/devices/clean-scan', { method: 'POST' });
+
+// Connections API
+export const getConnections = () => request('/connections');
+export const createConnection = (data) => request('/connections', { method: 'POST', body: JSON.stringify(data) });
+export const updateConnection = (id, data) => request(`/connections/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deleteConnection = (id) => request(`/connections/${id}`, { method: 'DELETE' });

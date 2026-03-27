@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import * as api from '../api.js';
 
-const CATEGORIES = ['server', 'desktop', 'mobile', 'iot', 'network', 'other'];
+const CATEGORIES = ['server', 'desktop', 'mobile', 'iot', 'network', 'router', 'switch', 'access_point', 'firewall', 'other'];
 
 // Popover shown when clicking a device node on the network map.
 // Shows device details, linked host info, and action buttons.

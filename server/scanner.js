@@ -1,9 +1,10 @@
-import { exec } from 'child_process';
+import { exec, execFile } from 'child_process';
 import { promisify } from 'util';
 import { networkInterfaces } from 'os';
 import dns from 'dns';
 
 const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 const dnsReverse = promisify(dns.reverse);
 
 // Parse `arp -a` output into [{ip, mac}] entries.
@@ -47,9 +48,10 @@ async function reverseLookup(ip) {
 }
 
 // Ping a single IP with a 1-second timeout. Resolves true/false.
+// Uses execFile (not exec) to avoid shell injection — IP is passed as an argument, not interpolated.
 async function pingHost(ip) {
   try {
-    await execAsync(`ping -c 1 -W 1 ${ip}`, { timeout: 3000 });
+    await execFileAsync('ping', ['-c', '1', '-W', '1', ip], { timeout: 3000 });
     return true;
   } catch {
     return false;

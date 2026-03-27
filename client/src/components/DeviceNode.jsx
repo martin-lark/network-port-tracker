@@ -1,13 +1,16 @@
 import React from 'react';
 import { Handle, Position } from '@xyflow/react';
 
-// Category color mapping for node borders
 const CATEGORY_COLORS = {
   server: 'var(--accent)',
   desktop: '#4a90d9',
   mobile: 'var(--green-text)',
   iot: 'var(--yellow-text)',
   network: '#9b59b6',
+  router: '#3b82f6',
+  switch: '#14b8a6',
+  access_point: '#a855f7',
+  firewall: '#ef4444',
   other: 'var(--text-muted)',
 };
 
@@ -21,18 +24,20 @@ export function DeviceNode({ data }) {
   return (
     <div className={`device-node ${isLinked ? 'device-node-linked' : 'device-node-unknown'}`}
       style={{ borderColor }}>
-      <Handle type="target" position={Position.Top} style={{ visibility: 'hidden' }} />
+      <Handle type="target" position={Position.Top} className="device-handle" />
       <div className="device-node-hostname">
         {isLinked ? device.host_name : (device.hostname || 'Unknown')}
       </div>
       <div className="device-node-ip">{device.ip_address}</div>
       <div className="device-node-meta">
-        <span className="device-node-category" style={{ color: borderColor }}>{device.category}</span>
+        <span className="device-node-category" style={{ color: borderColor }}>
+          {device.category?.replace('_', ' ')}
+        </span>
         {isLinked && device.port_count > 0 && (
           <span className="device-node-ports">{device.port_count} port{device.port_count !== 1 ? 's' : ''}</span>
         )}
       </div>
-      <Handle type="source" position={Position.Bottom} style={{ visibility: 'hidden' }} />
+      <Handle type="source" position={Position.Bottom} className="device-handle" />
     </div>
   );
 }

@@ -487,6 +487,15 @@ body {
 }
 .connection-form h3 { font-size: 16px; color: var(--text-primary); margin-bottom: 4px; }
 
+/* Device connection handles */
+.device-handle {
+  width: 8px; height: 8px;
+  background: var(--border); border: 2px solid var(--bg-secondary);
+  opacity: 0; transition: opacity 0.15s;
+}
+.device-node:hover .device-handle { opacity: 1; }
+.device-handle:hover { background: var(--accent); }
+
 /* ── Mobile responsive ─────────────────────────── */
 
 @media (max-width: 768px) {

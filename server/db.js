@@ -4,14 +4,20 @@ import { mkdirSync } from 'fs';
 
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');
 
+// Create and initialize a SQLite database at the given path.
+// Used directly in tests with :memory: databases.
 export function createDb(dbPath) {
   const db = new Database(dbPath);
-  db.pragma('journal_mode = WAL');
-  db.pragma('foreign_keys = ON');
+  db.pragma('journal_mode = WAL');   // Write-Ahead Logging for better concurrent read performance
+  db.pragma('foreign_keys = ON');    // Enforce FK constraints (off by default in SQLite)
   migrate(db);
   return db;
 }
 
+// Create tables if they don't already exist.
+// Ports have a unique constraint on (host_id, port_number, protocol) for conflict detection.
+// Notes with a null host_id are global; otherwise they're linked to a host.
+// Deleting a host cascades to its ports and linked notes.
 function migrate(db) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS hosts (
@@ -52,9 +58,26 @@ function migrate(db) {
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS devices (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ip_address TEXT NOT NULL UNIQUE,
+      mac_address TEXT,
+      hostname TEXT,
+      host_id INTEGER REFERENCES hosts(id) ON DELETE SET NULL,
+      category TEXT DEFAULT 'other' CHECK(category IN ('server', 'desktop', 'mobile', 'iot', 'network', 'other')),
+      is_known INTEGER DEFAULT 0,
+      last_seen TEXT,
+      x_position REAL,
+      y_position REAL,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
   `);
 }
 
+// Singleton database instance for the application.
+// Creates the data directory if it doesn't exist.
 let _db;
 export function getDb() {
   if (!_db) {

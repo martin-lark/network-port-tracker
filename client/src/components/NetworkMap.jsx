@@ -6,8 +6,17 @@ import { DeviceNode } from './DeviceNode.jsx';
 import { DevicePopover } from './DevicePopover.jsx';
 import { HostForm } from './HostForm.jsx';
 import { AddDeviceForm } from './AddDeviceForm.jsx';
+import { ConnectionForm } from './ConnectionForm.jsx';
 
 const nodeTypes = { device: DeviceNode };
+
+const EDGE_STYLES = {
+  ethernet: { stroke: 'var(--accent)', strokeWidth: 2 },
+  wifi: { stroke: 'var(--text-secondary)', strokeWidth: 2, strokeDasharray: '5 5' },
+  tunnel: { stroke: '#f59e0b', strokeWidth: 2, strokeDasharray: '2 4' },
+  fiber: { stroke: '#10b981', strokeWidth: 3 },
+  usb: { stroke: 'var(--text-tertiary)', strokeWidth: 1.5 },
+};
 
 const CATEGORIES = ['all', 'server', 'desktop', 'mobile', 'iot', 'network', 'router', 'switch', 'access_point', 'firewall', 'other'];
 
@@ -44,7 +53,7 @@ function layoutNodes(devices) {
 export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
   const [devices, setDevices] = useState([]);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges] = useEdgesState([]);
+  const [edges, setEdges] = useEdgesState([]);
   const [knownOnly, setKnownOnly] = useState(true);
   const [hideDocker, setHideDocker] = useState(true);
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -56,6 +65,9 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
   const [hostFormPrefill, setHostFormPrefill] = useState(null);
   const [linkDeviceId, setLinkDeviceId] = useState(null);
   const dragSaveTimeout = useRef(null);
+  const [connections, setConnections] = useState([]);
+  const [showConnectionForm, setShowConnectionForm] = useState(false);
+  const [pendingConnection, setPendingConnection] = useState(null);
 
   const fetchDevices = useCallback(async () => {
     const params = knownOnly ? { known_only: 'true' } : {};
@@ -63,7 +75,12 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
     setDevices(data);
   }, [knownOnly]);
 
-  useEffect(() => { fetchDevices(); }, [fetchDevices]);
+  const fetchConnections = useCallback(async () => {
+    const data = await api.getConnections();
+    setConnections(data);
+  }, []);
+
+  useEffect(() => { fetchDevices(); fetchConnections(); }, [fetchDevices, fetchConnections]);
 
   // Update nodes whenever devices or filters change
   useEffect(() => {
@@ -76,6 +93,19 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
     }
     setNodes(layoutNodes(filtered));
   }, [devices, hideDocker, categoryFilter, setNodes]);
+
+  // Update edges whenever connections change
+  useEffect(() => {
+    const newEdges = connections.map(c => ({
+      id: `conn-${c.id}`,
+      source: String(c.source_device_id),
+      target: String(c.target_device_id),
+      type: 'default',
+      style: EDGE_STYLES[c.connection_type] || EDGE_STYLES.ethernet,
+      data: { connection: c },
+    }));
+    setEdges(newEdges);
+  }, [connections, setEdges]);
 
   const handleScan = async () => {
     setScanning(true);
@@ -135,6 +165,17 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
   const handlePaneClick = useCallback(() => {
     setSelectedDevice(null);
   }, []);
+
+  const handleConnect = useCallback((params) => {
+    setPendingConnection({ source: params.source, target: params.target });
+    setShowConnectionForm(true);
+  }, []);
+
+  const handleConnectionCreated = () => {
+    setShowConnectionForm(false);
+    setPendingConnection(null);
+    fetchConnections();
+  };
 
   const handleCreateHost = (prefill, deviceId) => {
     setHostFormPrefill(prefill);
@@ -212,6 +253,7 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
           onNodeDragStop={handleNodeDragStop}
           onNodeClick={handleNodeClick}
           onPaneClick={handlePaneClick}
+          onConnect={handleConnect}
           nodeTypes={nodeTypes}
           fitView
           minZoom={0.2}
@@ -253,6 +295,14 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
         <AddDeviceForm
           onClose={() => setShowAddDevice(false)}
           onDeviceCreated={fetchDevices}
+        />
+      )}
+      {showConnectionForm && pendingConnection && (
+        <ConnectionForm
+          sourceId={pendingConnection.source}
+          targetId={pendingConnection.target}
+          onClose={() => { setShowConnectionForm(false); setPendingConnection(null); }}
+          onConnectionCreated={handleConnectionCreated}
         />
       )}
     </div>

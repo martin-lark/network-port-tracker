@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Modal } from './Modal.jsx';
 import * as api from '../api.js';
 
-export function HostForm({ host, onClose, onSaved }) {
+// Add/edit host modal form. Pass existing host object to edit, or omit for add mode.
+export function HostForm({ host, prefill, onClose, onSaved }) {
   const [form, setForm] = useState({
-    name: host?.name || '', ip_address: host?.ip_address || '',
+    name: host?.name || prefill?.name || '', ip_address: host?.ip_address || prefill?.ip_address || '',
     os: host?.os || '', type: host?.type || 'other', description: host?.description || ''
   });
   const [error, setError] = useState('');

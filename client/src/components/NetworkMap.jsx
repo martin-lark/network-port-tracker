@@ -5,10 +5,11 @@ import * as api from '../api.js';
 import { DeviceNode } from './DeviceNode.jsx';
 import { DevicePopover } from './DevicePopover.jsx';
 import { HostForm } from './HostForm.jsx';
+import { AddDeviceForm } from './AddDeviceForm.jsx';
 
 const nodeTypes = { device: DeviceNode };
 
-const CATEGORIES = ['all', 'server', 'desktop', 'mobile', 'iot', 'network', 'other'];
+const CATEGORIES = ['all', 'server', 'desktop', 'mobile', 'iot', 'network', 'router', 'switch', 'access_point', 'firewall', 'other'];
 
 // Force-layout helper: arrange nodes in a grid pattern for initial placement.
 // Nodes with saved positions keep theirs; others get auto-positioned.
@@ -51,6 +52,7 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
   const [scanSummary, setScanSummary] = useState(null);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [showHostForm, setShowHostForm] = useState(false);
+  const [showAddDevice, setShowAddDevice] = useState(false);
   const [hostFormPrefill, setHostFormPrefill] = useState(null);
   const [linkDeviceId, setLinkDeviceId] = useState(null);
   const dragSaveTimeout = useRef(null);
@@ -186,6 +188,9 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
             <option key={c} value={c}>{c === 'all' ? 'All Categories' : c}</option>
           ))}
         </select>
+        <button className="btn btn-primary btn-sm" onClick={() => setShowAddDevice(true)}>
+          Add Device
+        </button>
         <span className="map-device-count">
           {filteredCount} device{filteredCount !== 1 ? 's' : ''}
           {categoryFilter !== 'all' && ` (${deviceCount} total)`}
@@ -242,6 +247,12 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
           prefill={hostFormPrefill}
           onClose={() => { setShowHostForm(false); setHostFormPrefill(null); setLinkDeviceId(null); }}
           onSaved={handleHostCreated}
+        />
+      )}
+      {showAddDevice && (
+        <AddDeviceForm
+          onClose={() => setShowAddDevice(false)}
+          onDeviceCreated={fetchDevices}
         />
       )}
     </div>

@@ -467,6 +467,19 @@ body {
   font-size: 13px;
 }
 
+/* Add Device Form */
+.add-device-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 100;
+  background: var(--overlay); display: flex; align-items: center; justify-content: center;
+}
+.add-device-form {
+  background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px;
+  padding: 20px; width: 320px; display: flex; flex-direction: column; gap: 10px;
+}
+.add-device-form h3 { font-size: 16px; color: var(--text-primary); margin-bottom: 4px; }
+.add-device-error { font-size: 12px; color: var(--accent); }
+.add-device-actions { display: flex; gap: 8px; margin-top: 4px; }
+
 /* ── Mobile responsive ─────────────────────────── */
 
 @media (max-width: 768px) {

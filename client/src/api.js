@@ -33,6 +33,8 @@ export const getPorts = (hostId, params = {}) => {
 export const createPort = (hostId, data) => request(`/hosts/${hostId}/ports`, { method: 'POST', body: JSON.stringify(data) });
 export const updatePort = (id, data) => request(`/ports/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 export const deletePort = (id) => request(`/ports/${id}`, { method: 'DELETE' });
+export const scanHostPorts = (hostId, ports = 'common') =>
+  request(`/hosts/${hostId}/scan`, { method: 'POST', body: JSON.stringify({ ports }) });
 
 export const getNotes = (params = {}) => {
   const qs = new URLSearchParams(params).toString();

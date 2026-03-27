@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import * as api from '../api.js';
 
+// Popover shown when clicking a connection edge on the network map.
+// Displays source/target device info and allows inline editing of
+// connection metadata (type, label, speed, notes) with save-on-blur.
 const CONNECTION_TYPES = ['ethernet', 'wifi', 'tunnel', 'fiber', 'usb'];
 
 export function ConnectionPopover({ connection, onClose, onConnectionUpdated, onConnectionDeleted }) {

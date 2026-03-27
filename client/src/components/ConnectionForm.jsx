@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import * as api from '../api.js';
 
+// Minimal form shown after drag-to-connect on the network map.
+// Lets the user pick a connection type and optional label before
+// creating the connection between two devices.
 const CONNECTION_TYPES = ['ethernet', 'wifi', 'tunnel', 'fiber', 'usb'];
 
 export function ConnectionForm({ sourceId, targetId, onClose, onConnectionCreated }) {

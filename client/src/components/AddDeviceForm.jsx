@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import * as api from '../api.js';
 
+// Modal form for manually adding devices to the network map.
+// Used for infrastructure that doesn't show up in scans (unmanaged switches, etc.).
+// Defaults to 'router' category since that's the most common manual-add use case.
 const CATEGORIES = ['server', 'desktop', 'mobile', 'iot', 'network', 'router', 'switch', 'access_point', 'firewall', 'other'];
 
 export function AddDeviceForm({ onClose, onDeviceCreated }) {
@@ -21,6 +24,8 @@ export function AddDeviceForm({ onClose, onDeviceCreated }) {
     try {
       await api.createDevice({
         hostname: hostname || null,
+        // Devices table requires a unique ip_address; generate a placeholder for
+        // infrastructure devices that don't have a known IP (e.g. unmanaged switches).
         ip_address: ipAddress || `manual-${Date.now()}`,
         category,
       });

@@ -73,7 +73,28 @@ function migrate(db) {
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS port_categories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL UNIQUE,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
   `);
+
+  // Add category_id to ports if it doesn't exist yet
+  const hasCategory = db.prepare("SELECT COUNT(*) as cnt FROM pragma_table_info('ports') WHERE name = 'category_id'").get();
+  if (!hasCategory.cnt) {
+    db.exec("ALTER TABLE ports ADD COLUMN category_id INTEGER REFERENCES port_categories(id) ON DELETE SET NULL");
+  }
+
+  // Seed default port categories
+  const categoryCount = db.prepare('SELECT COUNT(*) as cnt FROM port_categories').get();
+  if (categoryCount.cnt === 0) {
+    const insert = db.prepare('INSERT INTO port_categories (name) VALUES (?)');
+    for (const name of ['Web', 'Database', 'Media', 'Monitoring', 'Infrastructure', 'Other']) {
+      insert.run(name);
+    }
+  }
 }
 
 // Singleton database instance for the application.

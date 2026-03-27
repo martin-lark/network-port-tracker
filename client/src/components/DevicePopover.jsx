@@ -5,7 +5,7 @@ const CATEGORIES = ['server', 'desktop', 'mobile', 'iot', 'network', 'other'];
 
 // Popover shown when clicking a device node on the network map.
 // Shows device details, linked host info, and action buttons.
-export function DevicePopover({ device, hosts, onClose, onSelectHost, onCreateHost, onDeviceUpdated, onDeviceDeleted }) {
+export function DevicePopover({ device, devices, hosts, onClose, onSelectHost, onCreateHost, onDeviceUpdated, onDeviceDeleted }) {
   const [services, setServices] = useState([]);
   const [editing, setEditing] = useState(false);
   const [editHostname, setEditHostname] = useState(device.hostname || '');
@@ -39,8 +39,9 @@ export function DevicePopover({ device, hosts, onClose, onSelectHost, onCreateHo
     onDeviceDeleted();
   };
 
-  // Hosts not already linked to any device
-  const availableHosts = hosts.filter(h => h.id !== device.host_id);
+  // Exclude hosts already linked to another device
+  const linkedHostIds = new Set((devices || []).filter(d => d.host_id && d.id !== device.id).map(d => d.host_id));
+  const availableHosts = hosts.filter(h => !linkedHostIds.has(h.id));
 
   const lastSeen = device.last_seen ? new Date(device.last_seen).toLocaleString() : 'Never';
 

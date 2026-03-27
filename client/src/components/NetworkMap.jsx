@@ -108,15 +108,10 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
     setSelectedDevice(null);
   };
 
-  const handleHostCreated = async () => {
-    // After host is created, link the device to it
-    if (linkDeviceId) {
-      const updatedHosts = await api.getHosts();
-      // Find the newly created host by matching IP
-      const newHost = updatedHosts.find(h => h.ip_address === hostFormPrefill?.ip_address);
-      if (newHost) {
-        await api.updateDevice(linkDeviceId, { host_id: newHost.id });
-      }
+  const handleHostCreated = async (newHost) => {
+    // Link the device to the newly created host
+    if (linkDeviceId && newHost?.id) {
+      await api.updateDevice(linkDeviceId, { host_id: newHost.id });
     }
     setShowHostForm(false);
     setHostFormPrefill(null);
@@ -185,6 +180,7 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
         {selectedDevice && (
           <DevicePopover
             device={selectedDevice}
+            devices={devices}
             hosts={hosts}
             onClose={() => setSelectedDevice(null)}
             onSelectHost={(id) => { setSelectedDevice(null); onSelectHost(id); }}

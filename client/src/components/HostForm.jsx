@@ -13,9 +13,8 @@ export function HostForm({ host, prefill, onClose, onSaved }) {
   const handleSubmit = async (e) => {
     e.preventDefault(); setError('');
     try {
-      if (host) await api.updateHost(host.id, form);
-      else await api.createHost(form);
-      onSaved(); onClose();
+      const result = host ? await api.updateHost(host.id, form) : await api.createHost(form);
+      onSaved(result); onClose();
     } catch (err) { setError(err.error || 'Failed to save host'); }
   };
 

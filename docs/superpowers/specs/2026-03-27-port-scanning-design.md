@@ -88,7 +88,7 @@ Lives in `server/routes/ports.js` alongside existing port CRUD.
 4. For each open port found:
    - If a matching `(host_id, port_number, protocol='TCP')` row exists → update `status = 'active'`, bump `updated_at` (count as "updated")
    - If no matching row → insert with `service_name` from `getServiceName()`, `protocol = 'TCP'`, `status = 'active'` (count as "new")
-5. For ports that were scanned but found closed:
+5. For ports in the scanned range that were found closed (not all ports for the host — only those whose port number was included in the scan):
    - If a matching row exists with `status = 'active'` → update `status = 'inactive'`, bump `updated_at` (count as "closed")
    - If no matching row → skip (don't create entries for closed ports)
 6. Return summary and open port details

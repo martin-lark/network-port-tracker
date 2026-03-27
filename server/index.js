@@ -9,6 +9,7 @@ import { notesRouter } from './routes/notes.js';
 import { searchRouter } from './routes/search.js';
 import { exportRouter } from './routes/export.js';
 import { devicesRouter } from './routes/devices.js';
+import { categoriesRouter } from './routes/categories.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -27,6 +28,7 @@ app.use('/api/notes', notesRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/export', exportRouter);
 app.use('/api/devices', devicesRouter);
+app.use('/api/categories', categoriesRouter);
 
 // In production, serve the built React SPA and fall back to index.html for client-side routing
 if (process.env.NODE_ENV === 'production') {

@@ -36,6 +36,11 @@ export const deletePort = (id) => request(`/ports/${id}`, { method: 'DELETE' });
 export const scanHostPorts = (hostId, ports = 'common') =>
   request(`/hosts/${hostId}/scan`, { method: 'POST', body: JSON.stringify({ ports }) });
 
+// Categories API
+export const getCategories = () => request('/categories');
+export const createCategory = (name) => request('/categories', { method: 'POST', body: JSON.stringify({ name }) });
+export const deleteCategory = (id) => request(`/categories/${id}`, { method: 'DELETE' });
+
 export const getNotes = (params = {}) => {
   const qs = new URLSearchParams(params).toString();
   return request(`/notes${qs ? '?' + qs : ''}`);

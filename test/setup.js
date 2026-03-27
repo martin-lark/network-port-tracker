@@ -5,7 +5,10 @@ import { portsRouter } from '../server/routes/ports.js';
 import { notesRouter } from '../server/routes/notes.js';
 import { searchRouter } from '../server/routes/search.js';
 import { exportRouter } from '../server/routes/export.js';
+import { devicesRouter } from '../server/routes/devices.js';
 
+// Create an isolated Express app with an in-memory SQLite database for testing.
+// Each test file calls this to get a fresh database with no shared state.
 export function createTestApp() {
   const db = createDb(':memory:');
   const app = express();
@@ -16,5 +19,6 @@ export function createTestApp() {
   app.use('/api/notes', notesRouter);
   app.use('/api/search', searchRouter);
   app.use('/api/export', exportRouter);
+  app.use('/api/devices', devicesRouter);
   return { app, db };
 }

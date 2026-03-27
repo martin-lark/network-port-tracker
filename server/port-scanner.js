@@ -121,6 +121,10 @@ export function parsePorts(spec) {
     throw new Error('No ports specified');
   }
 
+  if (ports.length > 10000) {
+    throw new Error(`Too many ports (${ports.length}). Maximum is 10,000 per scan.`);
+  }
+
   return ports;
 }
 

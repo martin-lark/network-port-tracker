@@ -47,6 +47,12 @@ export function DevicePopover({ device, devices, hosts, onClose, onSelectHost, o
     try {
       const result = await api.scanHostPorts(device.host_id);
       setScanSummary(result.scan_summary);
+      // Refresh services list
+      if (device.host_id) {
+        api.getHost(device.host_id).then(host => {
+          setServices((host.ports || []).slice(0, 5));
+        }).catch(() => {});
+      }
       setTimeout(() => setScanSummary(null), 8000);
     } catch (err) {
       alert(err.error || 'Scan failed');
@@ -123,7 +129,7 @@ export function DevicePopover({ device, devices, hosts, onClose, onSelectHost, o
 
       {scanSummary && (
         <div style={{ padding: '6px 0', fontSize: '12px', color: 'var(--accent)' }}>
-          Found {scanSummary.open} open — {scanSummary.new} new, {scanSummary.updated} updated
+          Found {scanSummary.open} open — {scanSummary.new} new, {scanSummary.updated} updated, {scanSummary.closed} closed
         </div>
       )}
 

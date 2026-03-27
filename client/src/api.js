@@ -1,5 +1,8 @@
 const API = '/api';
 
+// Generic fetch wrapper for all API calls.
+// Handles: 204 No Content → null, JSON vs text response parsing,
+// and normalizes errors into { error, status } objects.
 async function request(url, options = {}) {
   const res = await fetch(API + url, {
     headers: { 'Content-Type': 'application/json', ...options.headers },
@@ -45,3 +48,14 @@ export const exportData = (format, params = {}) => {
   const qs = new URLSearchParams({ format, ...params }).toString();
   return request(`/export?${qs}`);
 };
+
+// Device API
+export const getDevices = (params = {}) => {
+  const qs = new URLSearchParams(params).toString();
+  return request(`/devices${qs ? '?' + qs : ''}`);
+};
+export const createDevice = (data) => request('/devices', { method: 'POST', body: JSON.stringify(data) });
+export const updateDevice = (id, data) => request(`/devices/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deleteDevice = (id) => request(`/devices/${id}`, { method: 'DELETE' });
+export const saveDevicePosition = (id, x, y) => request(`/devices/${id}/position`, { method: 'PUT', body: JSON.stringify({ x, y }) });
+export const scanNetwork = () => request('/devices/scan', { method: 'POST' });

@@ -496,6 +496,17 @@ body {
 .device-node:hover .device-handle { opacity: 1; }
 .device-handle:hover { background: var(--accent); }
 
+/* Connection Popover */
+.connection-popover {
+  position: absolute; top: 16px; right: 16px; width: 280px; z-index: 10;
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px; box-shadow: var(--shadow);
+}
+.connection-popover-fields { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.connection-popover-field { display: flex; flex-direction: column; gap: 3px; }
+.connection-popover-field label { margin-bottom: 0; }
+.connection-popover-field textarea { resize: vertical; min-height: 40px; }
+
 /* ── Mobile responsive ─────────────────────────── */
 
 @media (max-width: 768px) {

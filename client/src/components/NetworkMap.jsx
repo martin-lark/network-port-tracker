@@ -7,6 +7,7 @@ import { DevicePopover } from './DevicePopover.jsx';
 import { HostForm } from './HostForm.jsx';
 import { AddDeviceForm } from './AddDeviceForm.jsx';
 import { ConnectionForm } from './ConnectionForm.jsx';
+import { ConnectionPopover } from './ConnectionPopover.jsx';
 
 const nodeTypes = { device: DeviceNode };
 
@@ -68,6 +69,7 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
   const [connections, setConnections] = useState([]);
   const [showConnectionForm, setShowConnectionForm] = useState(false);
   const [pendingConnection, setPendingConnection] = useState(null);
+  const [selectedConnection, setSelectedConnection] = useState(null);
 
   const fetchDevices = useCallback(async () => {
     const params = knownOnly ? { known_only: 'true' } : {};
@@ -162,8 +164,14 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
     setSelectedDevice(device);
   }, []);
 
+  const handleEdgeClick = useCallback((event, edge) => {
+    setSelectedConnection(edge.data.connection);
+    setSelectedDevice(null);
+  }, []);
+
   const handlePaneClick = useCallback(() => {
     setSelectedDevice(null);
+    setSelectedConnection(null);
   }, []);
 
   const handleConnect = useCallback((params) => {
@@ -254,6 +262,7 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
           onNodeClick={handleNodeClick}
           onPaneClick={handlePaneClick}
           onConnect={handleConnect}
+          onEdgeClick={handleEdgeClick}
           nodeTypes={nodeTypes}
           fitView
           minZoom={0.2}
@@ -279,6 +288,14 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
             onCreateHost={handleCreateHost}
             onDeviceUpdated={() => { setSelectedDevice(null); fetchDevices(); }}
             onDeviceDeleted={() => { setSelectedDevice(null); fetchDevices(); }}
+          />
+        )}
+        {selectedConnection && (
+          <ConnectionPopover
+            connection={selectedConnection}
+            onClose={() => setSelectedConnection(null)}
+            onConnectionUpdated={() => { setSelectedConnection(null); fetchConnections(); }}
+            onConnectionDeleted={() => { setSelectedConnection(null); fetchConnections(); }}
           />
         )}
       </div>

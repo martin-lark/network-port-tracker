@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { scanNetwork } from '../scanner.js';
 
 export const devicesRouter = Router();
 
@@ -34,6 +35,16 @@ devicesRouter.post('/', (req, res) => {
       return res.status(409).json({ error: `Device with IP ${ip_address} already exists` });
     }
     throw err;
+  }
+});
+
+// POST /scan — trigger a network scan, returns all devices and summary
+devicesRouter.post('/scan', async (req, res) => {
+  try {
+    const result = await scanNetwork(req.db);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

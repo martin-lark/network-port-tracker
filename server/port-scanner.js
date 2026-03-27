@@ -90,7 +90,7 @@ export function getServiceName(port) {
 // Parse a port specification string into an array of port numbers.
 // Accepts: 'common' (default), '1-1024' (range), '80,443,8080' (list), '1-65535' (full).
 export function parsePorts(spec) {
-  if (!spec || spec === 'common') {
+  if (spec === undefined || spec === null || spec === 'common') {
     return [...COMMON_PORTS.keys()];
   }
 

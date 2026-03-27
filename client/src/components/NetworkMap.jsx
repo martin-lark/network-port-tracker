@@ -45,6 +45,7 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges] = useEdgesState([]);
   const [knownOnly, setKnownOnly] = useState(true);
+  const [hideDocker, setHideDocker] = useState(true);
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [scanning, setScanning] = useState(false);
   const [scanSummary, setScanSummary] = useState(null);
@@ -62,14 +63,17 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
 
   useEffect(() => { fetchDevices(); }, [fetchDevices]);
 
-  // Update nodes whenever devices or category filter changes
+  // Update nodes whenever devices or filters change
   useEffect(() => {
     let filtered = devices;
+    if (hideDocker) {
+      filtered = filtered.filter(d => !d.ip_address.startsWith('172.'));
+    }
     if (categoryFilter !== 'all') {
-      filtered = devices.filter(d => d.category === categoryFilter);
+      filtered = filtered.filter(d => d.category === categoryFilter);
     }
     setNodes(layoutNodes(filtered));
-  }, [devices, categoryFilter, setNodes]);
+  }, [devices, hideDocker, categoryFilter, setNodes]);
 
   const handleScan = async () => {
     setScanning(true);
@@ -120,9 +124,10 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
     fetchDevices();
   };
 
-  const deviceCount = devices.length;
+  const visibleDevices = hideDocker ? devices.filter(d => !d.ip_address.startsWith('172.')) : devices;
+  const deviceCount = visibleDevices.length;
   const filteredCount = categoryFilter !== 'all'
-    ? devices.filter(d => d.category === categoryFilter).length
+    ? visibleDevices.filter(d => d.category === categoryFilter).length
     : deviceCount;
 
   return (
@@ -135,6 +140,10 @@ export function NetworkMap({ hosts, onSelectHost, onHostCreated }) {
         <button className={`btn btn-sm ${knownOnly ? 'btn-secondary' : 'btn-primary'}`}
           onClick={() => setKnownOnly(!knownOnly)}>
           {knownOnly ? 'Known Only' : 'Show All'}
+        </button>
+        <button className={`btn btn-sm ${hideDocker ? 'btn-secondary' : 'btn-primary'}`}
+          onClick={() => setHideDocker(!hideDocker)}>
+          {hideDocker ? 'Docker Hidden' : 'Show All IPs'}
         </button>
         <select className="map-filter-select" value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}>
